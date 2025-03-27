@@ -188,8 +188,9 @@ public class JogoDaVida {
                     System.out.println("Erro: O número deve ser maior que zero.");
                 }
             } catch (InputMismatchException e) {
-                System.out.println("Por favor, digite um número válido.");
-                scanner.next();
+                System.out.println("Erro: Por favor, digite apenas números inteiros.");
+            } finally {
+                scanner.nextLine(); // Sempre limpa o buffer
             }
         }
         scanner.nextLine();
