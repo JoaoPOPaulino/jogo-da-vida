@@ -3,12 +3,40 @@ import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
 
+enum RegrasJogo {
+    CONWAY("Conway Original",
+            "Regras:\n Célular viva com 2 ou 3 vizinhos sobrevive\n- Célula com 3 vizinhos revive\n Demais células morrem ou permanecem mortas."),
+    VIDA_ESTAVEL("Vida Estável",
+            "Regras:\n- Vivas: sobrevivem com 2-4 vizinhos\n- Mortas: revivem com 3 ou 5 vizinhos\n- Demais células morrem ou permanecem mortas."),
+    HIGH_LIFE("High Life",
+            "Regras:\n- Vivas: sobrevivem com 2 ou 3 vizinhos\n- Morta: revivem com 3 ou 6 vizinhos\n- Demais células morrem ou permanecem mortas.");
+
+    private final String nome;
+    private final String descricao;
+
+    RegrasJogo(String nome, String descricao) {
+        this.nome = nome;
+        this.descricao = descricao;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    @Override
+    public String toString() {
+        return nome;
+    }
+
+}
+
 public class JogoDaVida {
 
     private static final int TAMANHO = 10;
     private static final char VIVO = 'O';
     private static final char MORTO = '.';
     private char[][] tabuleiro = new char[TAMANHO][TAMANHO];
+    private RegrasJogo regraSelecionada;
 
     // Inicializa o tabuleiro com todas as células mortas
     public JogoDaVida() {
@@ -92,17 +120,41 @@ public class JogoDaVida {
     // Sobrevive com 2, 3 ou 4 vizinhos
     // Renasce com exatamente 3 ou 5 vizinhos
     // Morre em outros casos
+    // private char aplicarRegras(char estadoAtual, int vizinhosVivos) {
+    //     if (estadoAtual == VIVO) {
+    //         if (vizinhosVivos == 2 || vizinhosVivos == 3 || vizinhosVivos == 4) {
+    //             return VIVO;
+    //         }
+    //         return MORTO;
+    //     } else {
+    //         if (vizinhosVivos == 3 || vizinhosVivos == 5) {
+    //             return VIVO;
+    //         }
+    //         return MORTO;
+    //     }
+    // }
     private char aplicarRegras(char estadoAtual, int vizinhosVivos) {
-        if (estadoAtual == VIVO) {
-            if (vizinhosVivos == 2 || vizinhosVivos == 3 || vizinhosVivos == 4) {
-                return VIVO;
-            }
-            return MORTO;
-        } else {
-            if (vizinhosVivos == 3 || vizinhosVivos == 5) {
-                return VIVO;
-            }
-            return MORTO;
+        switch (regraSelecionada) {
+            case CONWAY:
+                if (estadoAtual == VIVO) {
+                    return (vizinhosVivos == 2 || vizinhosVivos == 3) ? VIVO : MORTO;
+                } else {
+                    return (vizinhosVivos == 3) ? VIVO : MORTO;
+                }
+            case VIDA_ESTAVEL:
+                if (estadoAtual == VIVO) {
+                    return (vizinhosVivos >= 2 && vizinhosVivos <= 4) ? VIVO : MORTO;
+                } else {
+                    return (vizinhosVivos == 3 || vizinhosVivos == 5) ? VIVO : MORTO;
+                }
+            case HIGH_LIFE:
+                if (estadoAtual == VIVO) {
+                    return (vizinhosVivos == 2 || vizinhosVivos == 3) ? VIVO : MORTO;
+                } else {
+                    return (vizinhosVivos == 3 || vizinhosVivos == 6) ? VIVO : MORTO;
+                }
+            default:
+                return MORTO;
         }
     }
 
@@ -143,6 +195,7 @@ public class JogoDaVida {
     }
 
     public static void main(String[] args) throws InterruptedException {
+
         Scanner scanner = new Scanner(System.in);
         JogoDaVida jogo = new JogoDaVida();
 
@@ -160,6 +213,8 @@ public class JogoDaVida {
             System.out.println("Por favor, digite 's' para sim ou ENTER/'n' para não:");
         }
 
+        System.out.println("Escolha de inicialização: " + escolha);
+
         if (escolha.equals("s")) {
             jogo.iniciarAleatorio();
             System.out.println("Modo aleátorio selecionado.");
@@ -167,6 +222,33 @@ public class JogoDaVida {
             System.out.println("Modo manual selecionado.");
             jogo.configurarManual(scanner);
         }
+
+        System.out.println("\nEscolha o conjunto de regras:");
+        for (int i = 0; i < RegrasJogo.values().length; i++) {
+            System.out.printf("%d. %s\n", i + 1, RegrasJogo.values()[i]);
+        }
+        while (true) {
+            System.out.println("Digite o número da regra desejada: ");
+            try {
+                int escolhaRegra = scanner.nextInt();
+                scanner.nextLine();
+
+                System.out.println("Escolha de regra digitada: " + escolhaRegra);
+                if (escolhaRegra >= 1 && escolhaRegra <= RegrasJogo.values().length) {
+                    jogo.regraSelecionada = RegrasJogo.values()[escolhaRegra - 1];
+                    break;
+                } else {
+                    System.out.println("Número invalido! Tente novamente.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Por favor, digite um número válido.");
+                scanner.nextLine();
+            }
+        }
+
+        System.out.println("\nRegras selecionadas: " + jogo.regraSelecionada);
+        System.out.println(jogo.regraSelecionada.getDescricao());
+        System.out.println("\nPressione ENTER para continuar...");
 
         System.out.println("Tabuleiro inicial:");
         jogo.imprimir();
@@ -182,6 +264,10 @@ public class JogoDaVida {
             System.out.println("Digite o número máximo de gerações (maior que 0):");
             try {
                 maxGeracoes = scanner.nextInt();
+                scanner.nextLine();  // Limpa buffer
+
+                System.out.println("Número de gerações digitado: " + maxGeracoes);
+
                 if (maxGeracoes > 0) {
                     break;
                 } else {
@@ -189,8 +275,7 @@ public class JogoDaVida {
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Erro: Por favor, digite apenas números inteiros.");
-            } finally {
-                scanner.nextLine(); // Sempre limpa o buffer
+                scanner.nextLine();  // Limpa buffer
             }
         }
         scanner.nextLine();
