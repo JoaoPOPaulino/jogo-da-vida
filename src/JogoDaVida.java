@@ -152,14 +152,17 @@ public class JogoDaVida {
             escolha = scanner.nextLine().trim().toLowerCase();
             if (escolha.isEmpty()) {
                 escolha = "n";
+                break;
             }
             if (escolha.equals("s") || escolha.equals("n")) {
-                System.out.println("Por favor, digite 's' para sim ou 'n' para não:");
+                break;
             }
+            System.out.println("Por favor, digite 's' para sim ou ENTER/'n' para não:");
         }
 
         if (escolha.equals("s")) {
             jogo.iniciarAleatorio();
+            System.out.println("Modo aleátorio selecionado.");
         } else {
             System.out.println("Modo manual selecionado.");
             jogo.configurarManual(scanner);
@@ -175,10 +178,15 @@ public class JogoDaVida {
         }
 
         int maxGeracoes = 0;
-        while (maxGeracoes <= 0) {
+        while (true) {
             System.out.println("Digite o número máximo de gerações (maior que 0):");
             try {
                 maxGeracoes = scanner.nextInt();
+                if (maxGeracoes > 0) {
+                    break;
+                } else {
+                    System.out.println("Erro: O número deve ser maior que zero.");
+                }
             } catch (InputMismatchException e) {
                 System.out.println("Por favor, digite um número válido.");
                 scanner.next();
